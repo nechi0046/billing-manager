@@ -1,62 +1,37 @@
 :root {
-    --primary: #2c3e50;
-    --success: #27ae60;
-    --danger: #e74c3c;
+    --primary-color: #2c3e50;
+    --success-color: #27ae60;
+    --light-bg: #f8f9fa;
+    --border-color: #dee2e6;
 }
 
-body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-.container { max-width: 1300px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+body { font-family: sans-serif; background: var(--light-bg); padding: 20px; }
+.container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; position: relative; }
 
-/* 入力フォーム */
-.input-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
-.form-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-.form-group { display: flex; flex-direction: column; font-size: 0.85rem; font-weight: bold; }
-input, select, textarea { padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 4px; }
-
-/* 保存コントロール（チェックとボタン） */
-.save-control { display: flex; align-items: center; justify-content: center; gap: 30px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #ddd; }
-.check-box-large { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; font-weight: bold; color: var(--success); }
-.check-box-large input { width: 25px; height: 25px; cursor: pointer; }
-.btn-submit { background: var(--primary); color: white; border: none; padding: 12px 40px; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: bold; }
-
-/* テーブル固定ヘッダー */
-.table-frame { 
-    height: 450px; /* 表示枠の高さ固定 */
-    overflow-y: auto; /* 縦スクロール */
-    border: 1px solid #ddd;
-    margin-bottom: 20px;
+.loading-overlay {
+    position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.8);
+    display: flex; justify-content: center; align-items: center; z-index: 100; display: none;
 }
-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 0.85rem; }
-thead th { 
-    position: sticky; top: 0; 
-    background: #eee; z-index: 10; 
-    border: 1px solid #ddd; padding: 10px; 
-}
-td { border: 1px solid #ddd; padding: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* ステータス色 */
-.status-red { background: #ffdce0; }
-.status-yellow { background: #fff9db; }
-.status-green { background: #ebfbee; }
+.input-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; background: #eee; padding: 20px; margin-bottom: 20px; border-radius: 5px; }
+.form-group { display: flex; flex-direction: column; font-size: 0.8rem; }
+input, select, textarea { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
 
-/* ボタン類 */
-.footer-actions { display: flex; justify-content: flex-end; gap: 15px; }
-.btn-secondary { background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
-.btn-pdf { background: var(--success); color: white; border: none; padding: 10px 25px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.btn-submit { grid-column: 1 / -1; background: var(--primary-color); color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; }
+table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+.status-red { background-color: #ffdce0; }
+.status-yellow { background-color: #fff9db; }
+.status-green { background-color: #ebfbee; }
 
-/* マスタ登録 */
-.master-setting { margin-top: 40px; padding: 20px; border: 1px dashed #ccc; background: #fff; }
-.master-grid { display: flex; gap: 20px; }
-.master-item { display: flex; gap: 5px; }
-
-.loading-overlay { 
-    position: fixed; top: 0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.7); 
-    display:none; justify-content:center; align-items:center; z-index:9999; font-weight:bold;
-}
+.no-print { text-align: center; }
+.btn-edit, .btn-delete { border: none; padding: 4px 8px; cursor: pointer; color: white; margin-right: 2px; }
+.btn-edit { background: #6c757d; }
+.btn-delete { background: #e74c3c; }
+.footer-actions { margin-top: 20px; text-align: right; }
+.btn-pdf { background: var(--success-color); color: white; border: none; padding: 12px 24px; cursor: pointer; font-weight: bold; }
 
 @media print {
-    .input-form, .footer-actions, .no-print, .btn-edit, .btn-delete { display: none !important; }
-    .table-frame { height: auto; overflow: visible; }
-    table { font-size: 10pt; }
-    @page { size: A4 landscape; margin: 5mm; }
+    .input-form, .footer-actions, .no-print { display: none !important; }
+    @page { size: A4 landscape; margin: 10mm; }
 }
