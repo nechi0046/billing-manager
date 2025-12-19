@@ -2,47 +2,213 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>共有・送付進捗管理システム</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>送付進捗管理システム</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f1c40f;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        /* 入力フォームのスタイル */
+        .input-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background: #f1f3f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input, textarea {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn-submit {
+            grid-column: 1 / -1;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+
+        /* テーブルのスタイル */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e9ecef;
+            white-space: nowrap;
+        }
+
+        /* ステータスによる色分け */
+        .status-red { background-color: #ffdce0; }    /* 未送付 */
+        .status-yellow { background-color: #fff9db; } /* 一部完了 */
+        .status-green { background-color: #ebfbee; }  /* 完了 */
+
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-edit { background: #adb5bd; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 3px; }
+        .btn-delete { background: #ff6b6b; color: white; border: none; padding: 4px 8px; cursor: pointer; border-radius: 3px; }
+
+        /* フッターボタン */
+        .footer-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-pdf {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* 印刷用スタイル */
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; width: 100%; padding: 0; }
+            .input-form, .footer-actions, .actions, .no-print { display: none !important; }
+            table { font-size: 10pt; width: 100%; table-layout: fixed; }
+            th, td { word-wrap: break-word; }
+            @page { size: A4 landscape; margin: 10mm; }
+        }
+    </style>
 </head>
 <body>
+
 <div class="container">
-    <h1>送付進捗管理 (共有版)</h1>
-    
-    <div id="loading" class="loading-overlay">データを読み込み中...</div>
+    <h1>送付進捗管理一覧</h1>
 
     <div class="input-form">
+        <input type="hidden" id="edit-index" value="-1">
         <div class="form-group">
-            <label>お客様名（サジェスト）</label>
-            <input type="text" id="customerName" list="customer-list" placeholder="入力または選択">
-            <datalist id="customer-list"></datalist>
+            <label>お客様名</label>
+            <input type="text" id="customerName" placeholder="株式会社〇〇">
+        </div>
+        <div class="form-group">
+            <label>明細発行日</label>
+            <input type="date" id="issueDate">
+        </div>
+        <div class="form-group">
+            <label>管理表入力日</label>
+            <input type="date" id="inputDate">
+        </div>
+        <div class="form-group">
+            <label>郵送日</label>
+            <input type="date" id="mailDate">
+        </div>
+        <div class="form-group">
+            <label>メール送信日</label>
+            <input type="date" id="emailDate">
         </div>
         <div class="form-group">
             <label>担当者</label>
-            <select id="staffName" class="staff-select">
-                <option value="">選択してください</option>
-            </select>
-            <input type="text" id="staffNameFree" placeholder="直接入力も可" style="margin-top:5px;">
+            <input type="text" id="staffName" placeholder="担当者名">
         </div>
-        <div class="form-group"><label>明細発行日</label><input type="date" id="issueDate"></div>
-        <div class="form-group"><label>管理表入力日</label><input type="date" id="inputDate"></div>
-        <div class="form-group"><label>郵送日</label><input type="date" id="mailDate"></div>
-        <div class="form-group"><label>メール送信日</label><input type="date" id="emailDate"></div>
-        <div class="form-group" style="grid-column: span 2;"><label>メモ</label><textarea id="memo" rows="1"></textarea></div>
+        <div class="form-group" style="grid-column: span 2;">
+            <label>メモ</label>
+            <textarea id="memo" rows="1"></textarea>
+        </div>
         <div class="form-group" style="flex-direction: row; align-items: center; gap: 10px;">
-            <input type="checkbox" id="isCompleted"> <label>完了</label>
+            <input type="checkbox" id="isCompleted" style="width: 20px; height: 20px;">
+            <label style="margin: 0;">完了</label>
         </div>
-        <button class="btn-submit" onclick="saveData()">クラウドへ保存する</button>
+        <button class="btn-submit" onclick="saveData()">データを追加・更新する</button>
     </div>
 
     <div class="table-container">
         <table id="dataTable">
             <thead>
                 <tr>
-                    <th>お客様名</th><th>担当者</th><th>明細発行</th><th>入力日</th><th>郵送</th><th>メール</th><th>メモ</th><th>完了</th><th class="no-print">操作</th>
+                    <th style="width: 15%;">お客様名</th>
+                    <th style="width: 10%;">明細発行</th>
+                    <th style="width: 10%;">入力日</th>
+                    <th style="width: 10%;">郵送日</th>
+                    <th style="width: 10%;">メール送信</th>
+                    <th style="width: 10%;">担当者</th>
+                    <th>メモ</th>
+                    <th style="width: 5%;">完了</th>
+                    <th class="no-print" style="width: 10%;">操作</th>
                 </tr>
             </thead>
-            <tbody id="tableBody"></tbody>
+            <tbody id="tableBody">
+                </tbody>
         </table>
     </div>
 
@@ -50,6 +216,148 @@
         <button class="btn-pdf" onclick="processAllComplete()">全件完了（PDF保存してデータ削除）</button>
     </div>
 </div>
-<script src="script.js"></script>
+
+<script>
+    let records = JSON.parse(localStorage.getItem('billingProgress')) || [];
+
+    // 初期表示
+    renderTable();
+
+    // データの保存（新規・更新）
+    function saveData() {
+        const index = document.getElementById('edit-index').value;
+        const data = {
+            customerName: document.getElementById('customerName').value,
+            issueDate: document.getElementById('issueDate').value,
+            inputDate: document.getElementById('inputDate').value,
+            mailDate: document.getElementById('mailDate').value,
+            emailDate: document.getElementById('emailDate').value,
+            staffName: document.getElementById('staffName').value,
+            memo: document.getElementById('memo').value,
+            isCompleted: document.getElementById('isCompleted').checked
+        };
+
+        if (!data.customerName) {
+            alert('お客様名を入力してください');
+            return;
+        }
+
+        if (index === "-1") {
+            records.push(data);
+        } else {
+            records[index] = data;
+            document.getElementById('edit-index').value = "-1";
+        }
+
+        updateStorage();
+        clearForm();
+        renderTable();
+    }
+
+    // テーブル描画
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        // 未完了を上に、完了を下にソート
+        const sortedRecords = [...records].map((item, index) => ({...item, originalIndex: index}));
+        sortedRecords.sort((a, b) => a.isCompleted - b.isCompleted);
+
+        sortedRecords.forEach((record) => {
+            const row = document.createElement('tr');
+            
+            // ステータス判定
+            let statusClass = 'status-red';
+            if (record.isCompleted) {
+                statusClass = 'status-green';
+            } else if (record.mailDate || record.emailDate) {
+                statusClass = 'status-yellow';
+            }
+
+            row.className = statusClass;
+            row.innerHTML = `
+                <td>${record.customerName}</td>
+                <td>${record.issueDate}</td>
+                <td>${record.inputDate}</td>
+                <td>${record.mailDate || '-'}</td>
+                <td>${record.emailDate || '-'}</td>
+                <td>${record.staffName}</td>
+                <td>${record.memo}</td>
+                <td style="text-align:center">${record.isCompleted ? '✓' : ''}</td>
+                <td class="no-print">
+                    <div class="actions">
+                        <button class="btn-edit" onclick="editData(${record.originalIndex})">編集</button>
+                        <button class="btn-delete" onclick="deleteData(${record.originalIndex})">削除</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // 編集
+    function editData(index) {
+        const record = records[index];
+        document.getElementById('customerName').value = record.customerName;
+        document.getElementById('issueDate').value = record.issueDate;
+        document.getElementById('inputDate').value = record.inputDate;
+        document.getElementById('mailDate').value = record.mailDate;
+        document.getElementById('emailDate').value = record.emailDate;
+        document.getElementById('staffName').value = record.staffName;
+        document.getElementById('memo').value = record.memo;
+        document.getElementById('isCompleted').checked = record.isCompleted;
+        document.getElementById('edit-index').value = index;
+        window.scrollTo(0, 0);
+    }
+
+    // 削除
+    function deleteData(index) {
+        if (confirm('このデータを削除してもよろしいですか？')) {
+            records.splice(index, 1);
+            updateStorage();
+            renderTable();
+        }
+    }
+
+    // 全件完了・PDF保存処理
+    function processAllComplete() {
+        if (records.length === 0) {
+            alert('データがありません。');
+            return;
+        }
+
+        const allDone = records.every(r => r.isCompleted);
+        if (!allDone) {
+            alert('「完了」になっていない項目があります。すべてのデータの完了チェックを入れてください。');
+            return;
+        }
+
+        // PDF保存（印刷）の実行
+        window.print();
+
+        // 印刷後に削除確認
+        setTimeout(() => {
+            if (confirm('PDFとして保存（出力）しましたか？\nOKを押すと、今月のデータをリセット（削除）します。')) {
+                records = [];
+                updateStorage();
+                renderTable();
+                alert('データを削除しました。今月もお疲れ様でした！');
+            }
+        }, 1000);
+    }
+
+    function updateStorage() {
+        localStorage.setItem('billingProgress', JSON.stringify(records));
+    }
+
+    function clearForm() {
+        document.querySelectorAll('.input-form input:not([type=hidden]), .input-form textarea').forEach(el => {
+            if (el.type === 'checkbox') el.checked = false;
+            else el.value = '';
+        });
+        document.getElementById('edit-index').value = "-1";
+    }
+</script>
+
 </body>
 </html>
