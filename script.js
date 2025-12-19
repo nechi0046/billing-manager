@@ -1,4 +1,4 @@
-const GAS_URL = "https://teams.microsoft.com/l/message/48:notes/1766113081175?context=%7B%22contextType%22%3A%22chat%22%2C%22oid%22%3A%228%3Aorgid%3A988e9cdd-f5d4-471e-967e-676c0eec685a%22%7D";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzNb-6T4tlLp8A9B1OR2l8YImfknxYXhCzCFpzjaK9XTHaUBy0iebbhJTDd5GmE8rLv/exec";
 
 let records = [];
 
